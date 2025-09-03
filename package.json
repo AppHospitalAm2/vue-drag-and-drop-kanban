@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "lodash": "^4.17.13",
+    "vue-drag-n-drop": "github:AppHospitalAm2/vue-drag-and-drop-kanban",
     "vue-smooth-dnd": "^0.2.1"
   },
   "devDependencies": {

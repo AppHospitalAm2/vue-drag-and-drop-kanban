@@ -9781,6 +9781,13 @@ void-elements@^3.1.0:
   resolved "https://registry.npmjs.org/void-elements/-/void-elements-3.1.0.tgz"
   integrity sha1-YU9/v42AHwu18GYfWy9XhXUOTwk=
 
+"vue-drag-n-drop@github:AppHospitalAm2/vue-drag-and-drop-kanban":
+  version "1.3.1"
+  resolved "git+ssh://git@github.com/AppHospitalAm2/vue-drag-and-drop-kanban.git#65e01f90fc39ead6734866ac47116de611a01dad"
+  dependencies:
+    lodash "^4.17.13"
+    vue-smooth-dnd "^0.2.1"
+
 vue-hot-reload-api@^2.3.0:
   version "2.3.4"
   resolved "https://registry.npmjs.org/vue-hot-reload-api/-/vue-hot-reload-api-2.3.4.tgz"
