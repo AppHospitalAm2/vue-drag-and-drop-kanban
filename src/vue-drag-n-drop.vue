@@ -100,6 +100,12 @@ export default {
     },
     stopDragScroll() {
       this.isDraggingScroll = false;
+
+      if (e && !this.isDraggingCard) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
     },
     dragScroll(e) {
       if (!this.isDraggingScroll) return;
