@@ -87,10 +87,8 @@ export default {
   methods: {
     setDraginCard(value) {
       this.isDraggingCard = value
-      console.log("aqui 1")
     },
     startDragScroll(e) {
-      console.log("aqui 2")
       if (this.isDraggingCard) return;
 
       this.isDraggingScroll = true;
