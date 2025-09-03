@@ -32,7 +32,7 @@
         v-bind:key="ind"
         class="dd-drop-container"
         :style="{ '--column-color': item.color || '#ccc' }" >
-        <h2 class="dd-title">{{ item.name }}</h2>
+        <h2 class="dd-title-name">{{ item.name }}</h2>
         <Container 
           group-name="col"
           @drop="(e) => onCardDrop(item.name, e)"
@@ -223,7 +223,7 @@ export default {
   border-radius: 6px;
 }
 
-.dd-title {
+.dd-title-name {
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: bold;
