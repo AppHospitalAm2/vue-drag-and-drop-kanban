@@ -28,8 +28,8 @@
         <h2 class="dd-title-name">{{ item.name }}</h2>
         <Container group-name="col" @drop="(e) => onCardDrop(item.name, e)"
           :get-child-payload="getCardPayload(item.name)" drag-class="dd-card-ghost" drop-class="dd-card-ghost-drop"  
-          @drag-start="isDraggingCard = true"
-          @drag-end="isDraggingCard = false">
+          @drag-start="setDraginCard(true)"
+          @drag-end="setDraginCard(false)">
           <Draggable v-for="(card, cid) in item.children" :key="cid">
             <slot name="dd-card" v-bind:cardData="card">
               <div class="card">
@@ -86,8 +86,12 @@ export default {
   },
 
   methods: {
+    setDraginCard(value){
+      this.isDraggingCard = value
+      console.log("aqui 1")
+    },
     startDragScroll(e) {
-
+      console.log("aqui 2")
       if (this.isDraggingCard) return;
 
       this.isDraggingScroll = true;
