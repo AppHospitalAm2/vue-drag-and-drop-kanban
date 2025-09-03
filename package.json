@@ -6,6 +6,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "npm run build:umd & npm run build:es & npm run build:unpkg",
+    "prepare": "npm run build",
     "test": "vue-cli-service test:unit",
     "build:es": "rollup --config build/rollup.config.js --format es --file dist/vue-drag-n-drop.esm.js",
     "build:umd": "rollup --config build/rollup.config.js --format umd --file dist/vue-drag-n-drop.umd.js",
