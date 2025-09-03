@@ -27,7 +27,9 @@
         :style="{ '--column-color': item.color || '#ccc' }">
         <h2 class="dd-title-name">{{ item.name }}</h2>
         <Container group-name="col" @drop="(e) => onCardDrop(item.name, e)"
-          :get-child-payload="getCardPayload(item.name)" drag-class="dd-card-ghost" drop-class="dd-card-ghost-drop">
+          :get-child-payload="getCardPayload(item.name)" drag-class="dd-card-ghost" drop-class="dd-card-ghost-drop"  
+          @drag-start="isDraggingCard = true"
+          @drag-end="isDraggingCard = false">
           <Draggable v-for="(card, cid) in item.children" :key="cid">
             <slot name="dd-card" v-bind:cardData="card">
               <div class="card">
@@ -63,6 +65,7 @@ export default {
 
   data: function () {
     return {
+      isDraggingCard: false,
       isDraggingScroll: false,
       startX: 0,
       scrollLeft: 0,
@@ -84,9 +87,8 @@ export default {
 
   methods: {
     startDragScroll(e) {
-      const forbiddenTargets = ['card', 'button', 'input'];
-      if (forbiddenTargets.some(sel => e.target.closest(sel))) return;
-      // Só ativar se o target NÃO for um card
+
+      if (this.isDraggingCard) return;
 
       this.isDraggingScroll = true;
       this.startX = e.pageX - this.$refs.containerWrapper.offsetLeft;
