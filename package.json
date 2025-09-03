@@ -19,7 +19,7 @@
   },
   "unpkg": "dist/vue-drag-n-drop.min.js",
   "files": [
-    "dist/*"
+    "dist"
   ],
   "husky": {
     "hooks": {
