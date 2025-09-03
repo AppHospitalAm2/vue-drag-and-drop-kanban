@@ -104,7 +104,7 @@ export default {
       document.removeEventListener("mousemove", this.onKanbanDrag);
       document.removeEventListener("mouseup", this.stopKanbanDrag);
     },
-  },
+  
   /** 
    * Even that runs when an item is dropped in the original list bucket.
    * @param {Object} dropResult Holds the value of what is dropped.
@@ -210,6 +210,7 @@ export default {
     */
     this.$emit("cancel");
   }
+}
 }
 
 </script>
