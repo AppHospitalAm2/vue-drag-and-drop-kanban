@@ -23,8 +23,9 @@
     </h2>
     <div class="dd-result-group" ref="containerWrapper" @mousedown="startDragScroll" @mouseup="stopDragScroll"
       @mouseleave="stopDragScroll" @mousemove="dragScroll">
-      <div v-for="(item, ind) in dropGroups" :key="ind" class="dd-drop-container">
-        {{ item.name }}
+      <div v-for="(item, ind) in dropGroups" :key="ind" class="dd-drop-container"
+        :style="{ '--column-color': item.color || '#ccc' }">
+        <h2 class="dd-title-name">{{ item.name }}</h2>
         <Container group-name="col" @drop="(e) => onCardDrop(item.name, e)"
           :get-child-payload="getCardPayload(item.name)" drag-class="dd-card-ghost" drop-class="dd-card-ghost-drop">
           <Draggable v-for="(card, cid) in item.children" :key="cid">
@@ -83,12 +84,14 @@ export default {
 
   methods: {
     startDragScroll(e) {
+      const forbiddenTargets = ['.card', 'button', 'input'];
+      if (forbiddenTargets.some(sel => e.target.closest(sel))) return;
       // Só ativar se o target NÃO for um card
-      if (!e.target.classList.contains('card') && !e.target.closest('.card')) {
-        this.isDraggingScroll = true;
-        this.startX = e.pageX - this.$refs.containerWrapper.offsetLeft;
-        this.scrollLeft = this.$refs.containerWrapper.scrollLeft;
-      }
+
+      this.isDraggingScroll = true;
+      this.startX = e.pageX - this.$refs.containerWrapper.offsetLeft;
+      this.scrollLeft = this.$refs.containerWrapper.scrollLeft;
+
     },
     stopDragScroll() {
       this.isDraggingScroll = false;
