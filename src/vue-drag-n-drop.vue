@@ -30,8 +30,9 @@
       <div 
         v-for="(item,ind) in dropGroups"
         v-bind:key="ind"
-        class="dd-drop-container">
-        {{item.name}}
+        class="dd-drop-container"
+        :style="{ '--column-color': item.color || '#ccc' }" >
+        <h2 class="dd-title">{{ item.name }}</h2>
         <Container 
           group-name="col"
           @drop="(e) => onCardDrop(item.name, e)"
@@ -216,6 +217,17 @@ export default {
   white-space: normal;
   background-color: #f3f3f3;
   box-shadow: 0 1px 1px rgba(0,0,0,0.12), 0 1px 1px rgba(0,0,0,0.24);
+   /* bordas com cor dinâmica */
+  border-top: 4px solid var(--column-color, #ccc);
+  border-left: 4px solid var(--column-color, #ccc);
+  border-radius: 6px;
+}
+
+.dd-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--column-color, #333);
 }
 
 .card{
