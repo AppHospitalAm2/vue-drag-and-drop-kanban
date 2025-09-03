@@ -27,9 +27,8 @@
         :style="{ '--column-color': item.color || '#ccc' }">
         <h2 class="dd-title-name">{{ item.name }}</h2>
         <Container group-name="col" @drop="(e) => onCardDrop(item.name, e)"
-          :get-child-payload="getCardPayload(item.name)" drag-class="dd-card-ghost" drop-class="dd-card-ghost-drop"  
-          @drag-start="setDraginCard(true)"
-          @drag-end="setDraginCard(false)">
+          :get-child-payload="getCardPayload(item.name)" drag-class="dd-card-ghost" drop-class="dd-card-ghost-drop"
+          @drag-start="setDraginCard(true)" @drag-end="setDraginCard(false)">
           <Draggable v-for="(card, cid) in item.children" :key="cid">
             <slot name="dd-card" v-bind:cardData="card">
               <div class="card">
@@ -86,7 +85,7 @@ export default {
   },
 
   methods: {
-    setDraginCard(value){
+    setDraginCard(value) {
       this.isDraggingCard = value
       console.log("aqui 1")
     },
@@ -104,6 +103,9 @@ export default {
     },
     dragScroll(e) {
       if (!this.isDraggingScroll) return;
+      if (this.isDraggingCard) {
+        this.stopDragScroll()
+      }
       e.preventDefault();
       const x = e.pageX - this.$refs.containerWrapper.offsetLeft;
       const walk = (x - this.startX) * 1; // velocidade de scroll
