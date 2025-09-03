@@ -84,7 +84,7 @@ export default {
 
   methods: {
     startDragScroll(e) {
-      const forbiddenTargets = ['.card', 'button', 'input'];
+      const forbiddenTargets = ['card', 'button', 'input'];
       if (forbiddenTargets.some(sel => e.target.closest(sel))) return;
       // Só ativar se o target NÃO for um card
 
