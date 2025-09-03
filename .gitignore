@@ -2,6 +2,7 @@
 node_modules
 /coverage
 dist
+Makefile
 
 # local env files
 .env.local
