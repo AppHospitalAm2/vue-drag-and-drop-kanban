@@ -1,50 +1,37 @@
 <template>
   <div class="vue-drag-n-drop">
     <h2 class="dd-title">
-      {{originalTitle}}
+      {{ originalTitle }}
     </h2>
-    <div class="dd-first-group"> 
-        <Container 
-          @drop="onDrop" 
-          group-name="col"
-          :orientation="'horizontal'"
-          :get-child-payload="getOriginalCardPayload()"
-          drag-class="dd-card-ghost"
-          drop-class="dd-card-ghost-drop">
-          <Draggable v-for="(item, iind) in items" :key="iind">
-            <slot name="dd-card" v-bind:cardData="item">
-              <div class="card">
-                <p>
-                {{item}}
-                </p>
-              </div>
-            </slot>
-          </Draggable>
-        </Container>
+    <div class="dd-first-group">
+      <Container @drop="onDrop" group-name="col" :orientation="'horizontal'"
+        :get-child-payload="getOriginalCardPayload()" drag-class="dd-card-ghost" drop-class="dd-card-ghost-drop">
+        <Draggable v-for="(item, iind) in items" :key="iind">
+          <slot name="dd-card" v-bind:cardData="item">
+            <div class="card">
+              <p>
+                {{ item }}
+              </p>
+            </div>
+          </slot>
+        </Draggable>
+      </Container>
     </div>
     <hr>
     <h2 class="dd-title">
-      {{dropzonesTitle}}
+      {{ dropzonesTitle }}
     </h2>
-    <div class="dd-result-group">
-      <div 
-        v-for="(item,ind) in dropGroups"
-        v-bind:key="ind"
-        class="dd-drop-container"
-        :style="{ '--column-color': item.color || '#ccc' }" >
+    <div class="dd-result-group" ref="kanbanScroll" @mousedown="startKanbanDrag">
+      <div v-for="(item, ind) in dropGroups" v-bind:key="ind" class="dd-drop-container"
+        :style="{ '--column-color': item.color || '#ccc' }">
         <h2 class="dd-title-name">{{ item.name }}</h2>
-        <Container 
-          group-name="col"
-          @drop="(e) => onCardDrop(item.name, e)"
-          :get-child-payload="getCardPayload(item.name)"
-          drag-class="dd-card-ghost"
-          drop-class="dd-card-ghost-drop"
-        >
+        <Container group-name="col" @drop="(e) => onCardDrop(item.name, e)"
+          :get-child-payload="getCardPayload(item.name)" drag-class="dd-card-ghost" drop-class="dd-card-ghost-drop">
           <Draggable v-for="(card, cid) in item.children" :key="cid">
             <slot name="dd-card" v-bind:cardData="card">
               <div class="card">
                 <p>
-                  {{card}}
+                  {{ card }}
                 </p>
               </div>
             </slot>
@@ -78,7 +65,7 @@ export default {
 
   data: function () {
     return {
-      items:[],
+      items: [],
       dropGroups: [],
     }
   },
@@ -95,118 +82,140 @@ export default {
   },
 
   methods: {
-    /** 
-     * Even that runs when an item is dropped in the original list bucket.
-     * @param {Object} dropResult Holds the value of what is dropped.
-     * @public
-    */
-    onDrop(dropResult){
-      this.items = this.applyDrag(this.items, dropResult);
-      this.$emit('dropInOriginalBucket', dropResult);
+    startKanbanDrag(e) {
+      // ignora se clicar em um cartão
+      if (e.target.closest(".card")) return;
+
+      this.isKanbanDragging = true;
+      this.startX = e.pageX;
+      this.scrollLeft = this.$refs.kanbanScroll.scrollLeft;
+
+      document.addEventListener("mousemove", this.onKanbanDrag);
+      document.addEventListener("mouseup", this.stopKanbanDrag);
     },
+    onKanbanDrag(e) {
+      if (!this.isKanbanDragging) return;
 
-    /** 
-     * Runs when the card is dropped in any of the drop buckets. Handles the dropping into new bucket and 
-     * removing from original bucket.
-     * @param {String} columnId Holds the ID of the original bucket tot get the card.
-     * @param {Object} dropResult Holds the drop result.
-    */
-    onCardDrop(columnId, dropResult) {
-      if (dropResult.removedIndex !== null || dropResult.addedIndex !== null) {
+      const dx = e.pageX - this.startX;
+      this.$refs.kanbanScroll.scrollLeft = this.scrollLeft - dx;
+    },
+    stopKanbanDrag() {
+      this.isKanbanDragging = false;
+      document.removeEventListener("mousemove", this.onKanbanDrag);
+      document.removeEventListener("mouseup", this.stopKanbanDrag);
+    },
+  },
+  /** 
+   * Even that runs when an item is dropped in the original list bucket.
+   * @param {Object} dropResult Holds the value of what is dropped.
+   * @public
+  */
+  onDrop(dropResult) {
+    this.items = this.applyDrag(this.items, dropResult);
+    this.$emit('dropInOriginalBucket', dropResult);
+  },
 
-        if(dropResult.removedIndex !== null){
-          let found = this.dropGroups.filter(p => p.name === columnId)[0];
-          found.children.splice(dropResult.removedIndex, 1);
-        }
+  /** 
+   * Runs when the card is dropped in any of the drop buckets. Handles the dropping into new bucket and 
+   * removing from original bucket.
+   * @param {String} columnId Holds the ID of the original bucket tot get the card.
+   * @param {Object} dropResult Holds the drop result.
+  */
+  onCardDrop(columnId, dropResult) {
+    if (dropResult.removedIndex !== null || dropResult.addedIndex !== null) {
 
-        if (dropResult.addedIndex !== null){
-          let found = this.dropGroups.filter(p => p.name === columnId)[0];
-          found.children.splice(dropResult.addedIndex, 0, dropResult.payload);
-        }
+      if (dropResult.removedIndex !== null) {
+        let found = this.dropGroups.filter(p => p.name === columnId)[0];
+        found.children.splice(dropResult.removedIndex, 1);
       }
 
-      this.$emit('dropInDestinationBucket', columnId, dropResult);
-    },
-
-    /** 
-     * Gets the card payload
-     * @param {String} Holds the ID.
-    */
-    getCardPayload(id){
-      let that = this;
-      return function(index) {
-        let found = that.dropGroups.filter(p => p.name === id)[0].children[
-          index
-        ];
-
-        return found;
+      if (dropResult.addedIndex !== null) {
+        let found = this.dropGroups.filter(p => p.name === columnId)[0];
+        found.children.splice(dropResult.addedIndex, 0, dropResult.payload);
       }
-    },
-
-    /** 
-     * Same as card payload but this is only implemented in original list.
-     * @public
-    */
-    getOriginalCardPayload(){
-      let that = this;
-      return function(index){
-        return that.items[index];
-      }
-    },
-
-    /** 
-     * Applies the dragging result. It removes the item from original bucket and keeps it in new new list.
-     * @param {Array} arr Holds the array.
-     * @param {Object} dragResult Holds the drag information.
-     * @returns the new corrected list.
-     * @public
-    */
-    applyDrag(arr, dragResult) {
-      const { removedIndex, addedIndex, payload } = dragResult
-      if (removedIndex === null && addedIndex === null) return arr
-
-      const result = [...arr]
-      let itemToAdd = payload
-
-      if (removedIndex !== null) {
-        itemToAdd = result.splice(removedIndex, 1)[0]
-      }
-
-      if (addedIndex !== null) {
-        result.splice(addedIndex, 0, itemToAdd)
-      }
-
-      return result;
-    },
-
-    /** 
-     * Runs when save button is clicked. It first validates if all the items from the original list is empty.
-     * @public
-    */
-    saveClicked() {
-      /** 
-       * @event save Emits when save is clicked so that the parent component can appropriately handle it.
-       * @type {Object} 
-      */
-      this.$emit('save', {
-        dropzones: this.dropGroups,
-        originalBucket: this.items
-      });
-    },
-
-    cancelClicked() {
-      /** 
-       * @event cancel Handles the cancellation.
-      */
-      this.$emit("cancel");
     }
+
+    this.$emit('dropInDestinationBucket', columnId, dropResult);
+  },
+
+  /** 
+   * Gets the card payload
+   * @param {String} Holds the ID.
+  */
+  getCardPayload(id) {
+    let that = this;
+    return function (index) {
+      let found = that.dropGroups.filter(p => p.name === id)[0].children[
+        index
+      ];
+
+      return found;
+    }
+  },
+
+  /** 
+   * Same as card payload but this is only implemented in original list.
+   * @public
+  */
+  getOriginalCardPayload() {
+    let that = this;
+    return function (index) {
+      return that.items[index];
+    }
+  },
+
+  /** 
+   * Applies the dragging result. It removes the item from original bucket and keeps it in new new list.
+   * @param {Array} arr Holds the array.
+   * @param {Object} dragResult Holds the drag information.
+   * @returns the new corrected list.
+   * @public
+  */
+  applyDrag(arr, dragResult) {
+    const { removedIndex, addedIndex, payload } = dragResult
+    if (removedIndex === null && addedIndex === null) return arr
+
+    const result = [...arr]
+    let itemToAdd = payload
+
+    if (removedIndex !== null) {
+      itemToAdd = result.splice(removedIndex, 1)[0]
+    }
+
+    if (addedIndex !== null) {
+      result.splice(addedIndex, 0, itemToAdd)
+    }
+
+    return result;
+  },
+
+  /** 
+   * Runs when save button is clicked. It first validates if all the items from the original list is empty.
+   * @public
+  */
+  saveClicked() {
+    /** 
+     * @event save Emits when save is clicked so that the parent component can appropriately handle it.
+     * @type {Object} 
+    */
+    this.$emit('save', {
+      dropzones: this.dropGroups,
+      originalBucket: this.items
+    });
+  },
+
+  cancelClicked() {
+    /** 
+     * @event cancel Handles the cancellation.
+    */
+    this.$emit("cancel");
   }
 }
+
 </script>
 
 <style>
-
-.dd-drop-container{
+.dd-drop-container {
   display: inline-block;
   vertical-align: top;
   width: 210px;
@@ -216,8 +225,8 @@ export default {
   margin-right: 10px;
   white-space: normal;
   background-color: #f3f3f3;
-  box-shadow: 0 1px 1px rgba(0,0,0,0.12), 0 1px 1px rgba(0,0,0,0.24);
-   /* bordas com cor dinâmica */
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.24);
+  /* bordas com cor dinâmica */
   border-top: 4px solid var(--column-color, #ccc);
   border-left: 4px solid var(--column-color, #ccc);
   border-radius: 6px;
@@ -230,11 +239,11 @@ export default {
   color: var(--column-color, #333);
 }
 
-.card{
+.card {
   margin: 5px;
   width: 200px;
   background-color: white;
-  box-shadow: 0 1px 1px rgba(0,0,0,0.12), 0 1px 1px rgba(0,0,0,0.24);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.24);
   padding: 10px;
 }
 
@@ -248,25 +257,24 @@ export default {
   max-height: 200px;
 }
 
-.dd-first-group > .smooth-dnd-container {
+.dd-first-group>.smooth-dnd-container {
   min-height: 100px;
   white-space: unset;
 }
 
-.dd-drop-actions{
+.dd-drop-actions {
   text-align: center;
   margin: 10px 0px;
 }
 
-.dd-drop-actions button
-{
+.dd-drop-actions button {
   margin-right: 10px;
   padding: 10px;
   background-color: white;
   border-radius: 5px;
 }
 
-.dd-save{
+.dd-save {
   background: #5cdb95 !important;
   border: none;
   cursor: pointer;
@@ -276,5 +284,4 @@ export default {
   border: none;
   cursor: pointer;
 }
-
 </style>
